@@ -1,0 +1,328 @@
+@charset "utf-8";
+/*
+ *css reset
+ */
+html {
+  color: #000;
+  background: #fff;
+  overflow-y: scroll;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+html,
+body {
+  font-family: sans-serif;
+}
+/* 内外边距通常让各个浏览器样式的表现位置不同 */
+body,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+pre,
+code,
+form,
+fieldset,
+legend,
+input,
+textarea,
+p,
+blockquote,
+th,
+td,
+hr,
+button,
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  margin: 0;
+  padding: 0;
+}
+input,
+select,
+textarea {
+  font-size: 100%;
+}
+html *{
+  outline: none;
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-appearance: none;
+}
+ /*
+ * 移除 OS X 中 Safari 5 和 Chrome 内部的内边距以及搜索框的取消按钮
+ */
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/*
+ * 移除 Firefox 4+ 内部的内边距
+ */
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"],
+button{
+  border:none;
+}
+/* 去掉各 Table  cell 的边距并让其边重合 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+/* 去除默认边框 */
+fieldset,
+img {
+  border: 0;
+}
+/* 去掉 firefox 下此元素的边框 */
+abbr,
+acronym {
+  border: 0;
+  font-variant: normal;
+}
+/* 一致的 del 样式 */
+del {
+  text-decoration: line-through;
+}
+address,
+caption,
+cite,
+code,
+dfn,
+em,
+th,
+var {
+  font-style: normal;
+  font-weight: 500;
+}
+/* 去掉列表前的标识, li 会继承 */
+ol,
+ul {
+  list-style: none;
+}
+/* 对齐是排版最重要的因素, 别让什么都居中 */
+caption,
+th {
+  text-align: left;
+}
+/* 来自 yahoo, 让标题都自定义, 适应多个系统应用 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 100%;
+  font-weight: 500;
+}
+q:before,
+q:after {
+  content: '';
+}
+/* 统一上标和下标 */
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+sup {
+  top: -0.5em;
+}
+sub {
+  bottom: -0.25em;
+}
+/* 正常链接 未访问 */
+/* 鼠标悬停 */
+a:hover {
+  text-decoration: underline;
+}
+/* 默认不显示下划线，保持页面简洁 */
+ins,
+a {
+  text-decoration: none;
+}
+
+
+/**
+ * tg_layer css
+ *    糖果弹窗按钮
+ */
+.ajly-html,
+.ajly-html body{
+    height:100%;
+    overflow:hidden !important;
+}
+
+.ajly-mask{
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    background-color: rgba(0,0,0,0.4);
+}
+.ajly-main{
+    position:fixed;
+    background-color:#fff;
+    padding:70px 30px 75px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    text-align:center;
+    border:1px solid #ccc;
+}
+.ajly-header{
+    font-size:36px;
+    color:#444;
+}
+.ajly-title{
+    text-align:center;
+    line-height: 1;
+}
+.ajly-close{
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    height: 54px;
+    width: 54px;
+    line-height: 54px;
+    font-style: initial;
+    color: #fff;
+    background-color: #f00;
+    text-align: center;
+    border-radius: 100%;
+    font-size: 50px;
+    background-color:#ff5050;
+}
+.ajly-close:hover{
+    background-color:#ef3636;
+}
+.ajly-content{
+    font-size: 30px;
+    line-height: 2;
+    margin:15px 0 45px;
+}
+
+.ajly-footer{
+    text-align:center;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+}
+
+.ajly-btn{
+    display:inline-block;
+    font-size:30px;
+    background-color:#ff5050;
+    padding:20px 30px;
+    -webkit-box-flex: 1.0;
+    -moz-flex-grow: 1;
+    -webkit-flex-grow: 1;
+    flex-grow: 1;
+    color:#fff;
+    border:none;
+    border-radius:5px;
+    width:100%;
+}
+.ajly-btn:not(:first-child){
+    margin-left:10px;
+}
+.ajly-btn-trans{
+    border:1px solid #a7a7a7;
+    color:#000;
+    background-color:#fff;
+}
+
+/**
+ * tgInputOprateIcon
+ *    输入框的清除、显示密码按钮
+ */
+.ajic-wraper{
+    /**/
+    display: inline-block;
+    width: 100%;
+    /**/
+
+    position: relative;
+}
+.ajic-delIconWraper{
+    position: absolute;
+    right: 10px;
+    top: 0;
+    text-align: center;
+    display:none;
+    font-size:38px;
+}
+
+.ajic-PassIconWraper{
+    position: absolute;
+    top: 0;
+    right:100px;
+    text-align: center;
+    display:none;
+    font-size:38px;
+}
+
+/**
+ * slide 轮播
+ */
+.aj-slideContainer{
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    /* Fix of Webkit flickering */
+    z-index: 1;
+    width:100%;
+}
+.aj-slideWraper{
+    position: relative;
+    height: 100%;
+    z-index: 1;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-transform: translate3d(0px, 0, 0);
+            transform: translate3d(0px, 0, 0);
+    -webkit-transition-property: -webkit-transform;
+            transition-property: transform;
+    -webkit-transition-timing-function: ease-out;
+            transition-timing-function: ease-out;
+}
+.aj-slide{
+    float:left;
+    -webkit-box-orient: vertical;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    width:100%;
+}
