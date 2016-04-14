@@ -326,3 +326,21 @@ a {
     flex-direction: column;
     width:100%;
 }
+.aj-slidePgWraper{
+    position:absolute;
+    right:20px;
+    top:100%;
+    -webkit-transform: translateY(-100%);
+            transform: translateY(-100%);
+}
+.aj-slidePgWraper li{
+    display:inline-block;
+    height:10px;
+    width:10px;
+    border-radius:100%;
+    background-color:#ddd;
+    margin:10px;
+}
+.aj-slidePgWraper li.active{
+    background-color:#f33;
+}

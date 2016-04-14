@@ -70,6 +70,25 @@ window.TGUIMobile  = (function($){
         return this;
     };
 
+    $.fn.transitionEnd = function (callback) {
+        var events = ['webkitTransitionEnd', 'transitionend', 'oTransitionEnd', 'MSTransitionEnd', 'msTransitionEnd'],
+            i, j, dom = this;
+        function fireCallBack(e) {
+            /*jshint validthis:true */
+            if (e.target !== this) return;
+            callback.call(this, e);
+            for (i = 0; i < events.length; i++) {
+                dom.off(events[i], fireCallBack);
+            }
+        }
+        if (callback) {
+            for (i = 0; i < events.length; i++) {
+                dom.on(events[i], fireCallBack);
+            }
+        }
+        return this;
+    }
+
 
     /**==============================================================
      * 
@@ -80,7 +99,7 @@ window.TGUIMobile  = (function($){
      *  options -> json
            title：'标题',
            className: '',
-           shade：true||false, //是否显示阴影
+           shade：true||false, //是否显示遮罩层
            closeIcon: true || false
            button:{
                "showBtn":true,  
@@ -117,6 +136,7 @@ window.TGUIMobile  = (function($){
         }
      *      
      *===================================================================**/
+     //TODO 性能优化
     var layer = (function(){
 
         //路径改变，此处代码需要修改
@@ -151,9 +171,7 @@ window.TGUIMobile  = (function($){
         var lpt = LayerClass.prototype;
 
         lpt.init = function(){
-            var settings = this.settings || {},
-                dragable = settings.dragable || false,
-                that = this;
+            var that = this;
 
             //创建模板
             this.createVessel();
@@ -319,7 +337,7 @@ window.TGUIMobile  = (function($){
 
 
     /**=====================================================================
-     * 为input输入框添加清楚按钮、显示密码按钮等
+     * 为input输入框添加清除按钮、显示密码按钮等
      * 
      * 调用方式：
      *    $('input').ajInputOprateIcon({
@@ -336,7 +354,6 @@ window.TGUIMobile  = (function($){
 
             var _timeoutId;
             var _settings = $.extend({}, $.fn.ajInputOprateIcon.defaults, options);
-            //保持链式调用
             //过滤掉非内容输入框的input
             return this.filter('input')
                 .each(function(){
@@ -464,51 +481,104 @@ window.TGUIMobile  = (function($){
      *       </div>
      *    </div>
      *
+     *  调用方式
+     *      $('.aj-slideContainer').ajSlider(options);
+     *
+     *   options：{
+            animSpeed: 300,    // 滑动速度
+            pauseTime: 3000,   // 滑动间隔
+            autoplay: false,   // 是否自动播放
+            pagination:true,   // 是否显示分页信息
+            column: 1,         // 每屏幕显示几列
+            loop:true          // 是否循环
+     *   }
+     *
      * 
      * ===================================================================**/
     (function(){
         var domStrs = ['aj-slideContainer', 'aj-slideWraper', 'aj-slide'];
 
         var ajSlider = function(element, settings){
-            var $firstSlide;
-            var _this        = this;
-            var $element     = $(element);
-            var $slideWraper = $element.find('.'+domStrs[1]);
-            var $slides      = $slideWraper.find('.'+domStrs[2]);
-            var slideCount   = $slides.length;
-            var wraperWidth  = $element.width();
-            var column       = settings.column || 1;
-            var slideWidth   = Math.ceil( wraperWidth / column );
-            var delay        = settings.pauseTime || 3000;
-            var loop         = settings.loop;
-            var speed        = settings.animSpeed
+            var $cloneSlide, $pagination;
+            var _this          = this;
+            var $element       = $(element);
+            var $slideWraper   = $element.find('.'+domStrs[1]);
+            var $slides        = $slideWraper.find('.'+domStrs[2]);
+            var $initialSlides = $slides.clone();
+            var slideCount     = $slides.length;
+            var indexlength    = slideCount - 1;
+            var wraperWidth    = $element.width();
+            var column         = settings.column || 1;
+            var slideWidth     = Math.ceil( wraperWidth / column );
+            var delay          = settings.pauseTime || 3000;
+            var loop           = settings.loop;
+            var speed          = settings.animSpeed;
+            var pagination     = settings.pagination;
+            var i              =0;
 
-            if(loop){
-                $firstSlide = $( $slideWraper.find('.'+domStrs[2])[0] ).clone();
-                $slideWraper.append($firstSlide);
-                slideCount += 1;
+            if(loop){ 
+                //TODO 循环优化
+                for(; i < column ; i++ ){
+                    $cloneSlide = $( $initialSlides[i] ).clone();
+                    $slideWraper.append($cloneSlide);
+
+                    $cloneSlide = $( $initialSlides[indexlength - i] ).clone();
+                    $slideWraper.prepend($cloneSlide);
+                    slideCount += 2;
+                }
             }
 
-            this.settings     = settings || {};
-            this.slideWidth   = slideWidth;
-            this.slideWraper  = $slideWraper;
-            this.containter   = $element;
-            this.currentIndex = settings.settings || 0; 
+            if(pagination){
+                $pagination = $('<ul class="aj-slidePgWraper"></ul>');
+                for( i = 0 ; i < indexlength + 1 ; i++){
+                    $pagination.append('<li></li>');
+                }
+                $element.append( $pagination );
+            }
+
+            //初始化数据
+            this.settings        = settings || {};
+            this.slideWidth      = slideWidth;
+            this.slideWraper     = $slideWraper;
+            this.containter      = $element;
+            this.currentIndex    = settings.settings || 0; 
+            this.touches         = {};
+            this.autoPlayTimerId = '';
+            this.toucheStartTime = '';
+            this.pagination      = $pagination;
             
             $slideWraper.css({
                 width: slideWidth * slideCount
             });
 
+            this.silentSlideTo(column);
             $slideWraper.transition(speed);
+
+            $slideWraper.on('touchstart', function(e){
+                _this.onTouchStart.call(_this,e);
+            });
+
+            $slideWraper.on('touchmove', function(e){
+                _this.onTouchMove.call(_this,e);
+            });
+
+            $slideWraper.on('touchend', function(e){
+                _this.onTouchEnd.call(_this,e);
+            });
+
         };
 
         var spt = ajSlider.prototype;
 
         spt.slideTo = function(index){
-
-            console.log(Math.random());
-
-            var length = this.slideWraper.find('.'+domStrs[2]).length;
+            var $pagination, targetLi;
+            var _this      = this;
+            var length     = this.slideWraper.find('.'+domStrs[2]).length;
+            var loop       = this.settings.loop;
+            var column     = this.settings.column;
+            var pagination = this.settings.pagination;
+            var translateX = -(index * this.slideWidth);
+            var speed      = this.settings.animSpeed || 500;
 
             if(isUndefined(index) || index<0) index = 0;
             if(index > (length-1)){
@@ -517,20 +587,40 @@ window.TGUIMobile  = (function($){
 
             this.currentIndex = index;
 
-            var _this      = this;
-            var $this      = $(_this);
-            var translateX = -(index * this.slideWidth);
-            var speed      = this.settings.animSpeed || 500;
             if (this.support.transforms3d){
                 this.slideWraper.transform('translate3d(' + translateX + 'px, 0px, 0px)');  
             } else {
-                s.slideWraper.transform('translate(' + translateX + 'px, 0px)')
+                this.slideWraper.transform('translate(' + translateX + 'px, 0px)')
             } 
+
+            if(loop){
+                if( (length - column) === index ){
+                    _this.slideWraper.transitionEnd(function(){
+                        _this.silentSlideTo(column);
+                    });
+                } 
+                if( 0 === index ){
+                    _this.slideWraper.transitionEnd(function(){
+                        _this.silentSlideTo(length - 2 * column);
+                    });
+                }
+            }
+
+            if(pagination){
+                $pagination = _this.pagination;
+                targetLi = $pagination.find('li')[_this.currentIndex - column];
+                $(targetLi).addClass('active').siblings().removeClass('active');
+            }
 
         };
 
+        spt.silentSlideTo = function(index){
+            this.slideWraper.transition(0);
+            this.slideTo(index);
+        };
+
         spt.autoplay = function(){
-            var timeoutId;
+            var index;
             var _this    = this;
             var settings = _this.settings;
             var pausing  = _this.pausing;
@@ -540,32 +630,119 @@ window.TGUIMobile  = (function($){
             var loop     = settings.loop;
             var speed    = settings.animSpeed || 500;
 
+            console.log(Math.random());
 
-            var index    =_this.currentIndex + 1;
-            if(pausing){
-                index = index - 1 ;
-            }
-            _this.slideTo(index);
-
-            if((length - 1) === index){
-                if(!loop){
-                    return false;
+            if(!pausing){
+                index = _this.currentIndex + 1;
+                _this.slideTo(index);
+                if((length - 1) === index){
+                    if(!loop){
+                        return false;
+                    } else {
+                        _this.slideWraper.transitionEnd(function(){
+                            _this.silentSlideTo(0);
+                        });
+                    }
                 }
-                else{
-                    setTimeout(function(){
-                        _this.slideWraper.transition(0);
-                        _this.slideTo(0);
-                    }, speed);
-                }
+                _this.slideWraper.transitionEnd(function(){
+                    clearTimeout(_this.autoPlayTimerId);
+                    _this.autoPlayTimerId = setTimeout(function(){
+                        _this.slideWraper.transition(speed);
+                        _this.autoplay();
+                    }, delay);
+                });
+            } else {
+                clearTimeout(_this.autoPlayTimerId);
+                _this.autoPlayTimerId = setTimeout(function(){
+                    _this.slideWraper.transition(speed);
+                    _this.autoplay();
+                }, delay);
             }
-
-            timeoutId = setTimeout(function(){
-                _this.slideWraper.transition(speed);
-                _this.autoplay();
-            }, delay);
-
-            return timeoutId;
         }
+
+        spt.onTouchStart = function(e){
+            var _this = this;
+            _this.pausing = true;
+
+            _this.touches.startX  = _this.touches.currentX = e.touches[0].pageX;
+            _this.wraperTranslateX = this.getTranslateX( this.slideWraper[0] );
+            _this.toucheStartTime = Date.now();
+            _this.slideWraper.transition(0);
+        }
+
+        spt.onTouchMove = function(e){
+            var wraperTranslateX,
+                currentTranslate;
+
+            var diff           = 0;
+            var startTranslate = 0;
+
+            e.stopPropagation();
+            e.preventDefault();
+
+            this.touches.currentX = e.touches[0].pageX;
+
+            
+            diff = this.touches.currentX - this.touches.startX;
+            currentTranslate = this.wraperTranslateX + diff;
+            if(this.support.transforms3d){
+                this.slideWraper.transform('translate3d(' + currentTranslate + 'px, 0px, 0px)');  
+            } else {
+                this.slideWraper.transform('translate(' + currentTranslate + 'px, 0px)');
+            }
+        }
+
+        spt.onTouchEnd = function(e){
+            var nowTime = Date.now();
+            var slideToIndex = 0 ;
+            var speed        = this.settings.animSpeed;
+            var diff         = this.touches.currentX - this.touches.startX;
+            var absDiff      = Math.abs(diff);
+            var slideWidth   = this.slideWidth;
+
+            this.pausing = false;
+            this.slideWraper.transition( speed );
+
+            if( ((absDiff < slideWidth/3) && (nowTime - this.toucheStartTime) > 200
+                || absDiff < 10 )){
+                slideToIndex = this.currentIndex;
+            } else if( diff < 0 ){
+                slideToIndex = ++this.currentIndex;
+            } else {
+                slideToIndex = --this.currentIndex;
+            }
+            this.slideWraper.transition(200);
+            this.slideTo( slideToIndex );
+        }
+
+        spt.getTranslateX = function (el) {
+            var matrix, curTransform, curStyle, transformMatrix;
+
+            curStyle = window.getComputedStyle(el, null);
+            if (window.WebKitCSSMatrix) {
+                curTransform = curStyle.transform || curStyle.webkitTransform;
+                if (curTransform.split(',').length > 6) {
+                    curTransform = curTransform.split(', ').map(function(a){
+                        return a.replace(',','.');
+                    }).join(', ');
+                }
+                // Some old versions of Webkit choke when 'none' is passed; pass
+                // empty string instead in this case
+                transformMatrix = new window.WebKitCSSMatrix(curTransform === 'none' ? '' : curTransform);
+            }
+            else {
+                transformMatrix = curStyle.MozTransform || curStyle.OTransform || curStyle.MsTransform || curStyle.msTransform  || curStyle.transform || curStyle.getPropertyValue('transform').replace('translate(', 'matrix(1, 0, 0, 1,');
+                matrix = transformMatrix.toString().split(',');
+            }
+        
+            if (window.WebKitCSSMatrix){
+                curTransform = transformMatrix.m41;
+            } else {
+                curTransform = parseFloat(matrix[4]);
+            }
+
+            return curTransform || 0;
+        };
 
         spt.support = {
             transforms3d : (window.Modernizr && Modernizr.csstransforms3d === true) || (function () {
@@ -573,27 +750,34 @@ window.TGUIMobile  = (function($){
                 return ('webkitPerspective' in div || 'MozPerspective' in div || 'OPerspective' in div || 'MsPerspective' in div || 'perspective' in div);
             })(),
         };
+
+        var initSlider = function(element, settings){
+            var $element    = $(element);
+            var delay       = settings.pauseTime;
+            var autoplay    = settings.autoplay;
+
+            var ajSliderEle = new ajSlider($element, settings);
+            if(autoplay){
+                ajSliderEle.autoPlayTimerId = setTimeout(function(){
+                    ajSliderEle.autoplay();
+                }, delay);
+            }
+
+            return ajSliderEle;
+        };
         
         $.fn.ajSlider = function(options){
             var settings = $.extend({}, $.fn.ajSlider.defaults, options);
+            var column   = settings.column;
 
             return this.each(function(index,element){
                 var $element    = $(element);
-                var ajSliderEle = $element.data('ajSlider');
-                var autoplay    = settings.autoplay;
-                var delay       = settings.pauseTime;
-
-                if(ajSliderEle) return;
-
-                ajSliderEle = new ajSlider($element, settings);
-                if(autoplay){
-                    setTimeout(function(){
-                        ajSliderEle.autoplay();
-                    }, delay);
-                }
-
-                ajSliderEle.index = index;
-                $element.data('ajSlider', true);
+                var ajSliderEle = initSlider($element, settings);
+                $win.on('resize.ajSlider', function(){
+                    clearTimeout(ajSliderEle.autoPlayTimerId);
+                    ajSliderEle.silentSlideTo(column);
+                    ajSliderEle = initSlider($element, settings);
+                });
             });
         }
 
@@ -602,15 +786,13 @@ window.TGUIMobile  = (function($){
             startSlide:0, 
             animSpeed: 500,
             pauseTime: 3000,
-            autoplay: true,
+            autoplay: false,
             pagination:true,
             column: 1,
             loop:true
         };
     })();
     
-    
-
     return {
         layer: layer
     };
