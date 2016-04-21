@@ -34,20 +34,26 @@ window.TGUIMobile  = (function($){
         var head       = $('head')[0];
         var module     = moduleSrc.replace(/\s/g, '');
         var iscss      = /\.css$/.test(module);
+        var type       = iscss?'link':'script';
         var node       = document.createElement(iscss ? 'link' : 'script');
         var path       = document.currentScript.src;
-        var modulePath = path.replace(/\w+\.js$/,module);
+        var modulePath = path.replace(/dist\/js\/\w+\.js$/,module);
+        var targetTag, type;
 
         //生成id
         var id = module.replace(/\.|\/|\:/g, '');
-
         if(iscss){
             node.rel = 'stylesheet';
         }
         node[iscss?'href':'src'] = /^http:\/\//.test(module) ? module : modulePath;
         node.id = id;
         if(!$('#'+id).length){
-            head.appendChild(node);
+            if(iscss){
+                targetTag = head.getElementsByTagName('link')[0];
+            } else {
+                targetTag = document.currentScript;
+            }
+            head.insertBefore(node, targetTag);
         }
     };
 
@@ -75,7 +81,6 @@ window.TGUIMobile  = (function($){
         var events = ['webkitTransitionEnd', 'transitionend', 'oTransitionEnd', 'MSTransitionEnd', 'msTransitionEnd'],
             i, j, dom = this;
         function fireCallBack(e) {
-            /*jshint validthis:true */
             if (e.target !== this) {
                 return; 
             }
@@ -92,7 +97,8 @@ window.TGUIMobile  = (function($){
         return this;
     };
 
-
+    require('dist/css/tgui_mobile.min.css');
+    require('fonts/font-awesome-4.5.0/css/font-awesome.min.css');
     /**==============================================================
      * 
      * 弹出框
@@ -541,7 +547,6 @@ window.TGUIMobile  = (function($){
 
             $pagination.on('tap', function(e){
                 var index = $(e.target).data('index');
-                console.log(index);
                 _this.slideTo(index+column);
             });
 
@@ -628,9 +633,9 @@ window.TGUIMobile  = (function($){
             var _this = this;
             _this.slideWraper.transition(0);
             _this.slideTo(index);
-            requestAnimationFrame(function(){
+            setTimeout(function(){
                 _this.slideWraper.transition(speed);
-            });
+            }, 100);
         };
 
         spt.autoplay = function(){
