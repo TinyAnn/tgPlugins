@@ -16,6 +16,7 @@
  * Released on: Mar 25, 2016
  * 
  */
+
 window.TGUIMobile  = (function($){
     'use strict';
 
@@ -75,7 +76,9 @@ window.TGUIMobile  = (function($){
             i, j, dom = this;
         function fireCallBack(e) {
             /*jshint validthis:true */
-            if (e.target !== this) return;
+            if (e.target !== this) {
+                return; 
+            }
             callback.call(this, e);
             for (i = 0; i < events.length; i++) {
                 dom.off(events[i], fireCallBack);
@@ -87,7 +90,7 @@ window.TGUIMobile  = (function($){
             }
         }
         return this;
-    }
+    };
 
 
     /**==============================================================
@@ -136,7 +139,6 @@ window.TGUIMobile  = (function($){
         }
      *      
      *===================================================================**/
-     //TODO 性能优化
     var layer = (function(){
 
         //路径改变，此处代码需要修改
@@ -217,11 +219,12 @@ window.TGUIMobile  = (function($){
 
             this.$layerFragment = $(layerHtmlTmpl);
 
-            closeIcon && this.$layerFragment.on('tap', '.'+domStrs[1], function() {
-                that.closeLayer();
-                return false;
-            });
-
+            if(closeIcon){
+                this.$layerFragment.on('tap', '.'+domStrs[1], function() {
+                    that.closeLayer();
+                    return false;
+                });
+            }
         };
 
         //初始化按钮
@@ -346,7 +349,6 @@ window.TGUIMobile  = (function($){
      * 
      * ===================================================================**/
 
-    //TODO bug 横竖屏切换bug
     (function(){
         var _domStrs = ['ajic-wraper','ajic-delIcon', 'ajic-togglePassIcon', 'ajic-delIconWraper', 'ajic-PassIconWraper'];
         
@@ -354,6 +356,10 @@ window.TGUIMobile  = (function($){
 
             var _timeoutId;
             var _settings = $.extend({}, $.fn.ajInputOprateIcon.defaults, options);
+
+            $win.on('resize.ajInputOprateIcon', function(){
+                $(this).ajInputOprateIcon();
+            });
             //过滤掉非内容输入框的input
             return this.filter('input')
                 .each(function(){
@@ -362,14 +368,11 @@ window.TGUIMobile  = (function($){
                     var _$this     = $(this);
                     var _$wraper   = $('<div class="'+_domStrs[0]+' '+ (_settings.className||'')+'"></div>');
                     var _$delIcon  = $('<span class='+_domStrs[3]+'><i class="fa fa-times"></i></span>');
-                    var _width     = _$this.width() || '100%';
                     var _display   = _$this.css('_display') || 'inline-block';
                     var _height    = _$this.height() || '100px';
                     var _type      = _$this.attr('type');
                     var _iconWidth = _height*3/5;
-
                     _$wraper.css({
-                        width:_width,
                         display:_display
                     });
 
@@ -424,6 +427,7 @@ window.TGUIMobile  = (function($){
                         _$this.val('').focus();
                            $(this).hide();  
                     });
+
                 })
                 .on('focus.opretaIcon keyup', showIcons)
                 .on('blur.opretaIcon', function(){
@@ -465,7 +469,7 @@ window.TGUIMobile  = (function($){
         }
 
         //Default settings
-        $.fn.ajInputOprateIcon.defaults = {}
+        $.fn.ajInputOprateIcon.defaults = {};
 
     })();
 
@@ -498,7 +502,7 @@ window.TGUIMobile  = (function($){
     (function(){
         var domStrs = ['aj-slideContainer', 'aj-slideWraper', 'aj-slide'];
 
-        var ajSlider = function(element, settings){
+        var AjSlider = function(element, settings){
             var $cloneSlide, $pagination;
             var _this          = this;
             var $element       = $(element);
@@ -517,7 +521,6 @@ window.TGUIMobile  = (function($){
             var i              =0;
 
             if(loop){ 
-                //TODO 循环优化
                 for(; i < column ; i++ ){
                     $cloneSlide = $( $initialSlides[i] ).clone();
                     $slideWraper.append($cloneSlide);
@@ -531,10 +534,16 @@ window.TGUIMobile  = (function($){
             if(pagination){
                 $pagination = $('<ul class="aj-slidePgWraper"></ul>');
                 for( i = 0 ; i < indexlength + 1 ; i++){
-                    $pagination.append('<li></li>');
+                    $pagination.append('<li data-index='+i+'></li>');
                 }
                 $element.append( $pagination );
             }
+
+            $pagination.on('tap', function(e){
+                var index = $(e.target).data('index');
+                console.log(index);
+                _this.slideTo(index+column);
+            });
 
             //初始化数据
             this.settings        = settings || {};
@@ -552,7 +561,6 @@ window.TGUIMobile  = (function($){
             });
 
             this.silentSlideTo(column);
-            $slideWraper.transition(speed);
 
             $slideWraper.on('touchstart', function(e){
                 _this.onTouchStart.call(_this,e);
@@ -565,10 +573,9 @@ window.TGUIMobile  = (function($){
             $slideWraper.on('touchend', function(e){
                 _this.onTouchEnd.call(_this,e);
             });
-
         };
 
-        var spt = ajSlider.prototype;
+        var spt = AjSlider.prototype;
 
         spt.slideTo = function(index){
             var $pagination, targetLi;
@@ -580,7 +587,9 @@ window.TGUIMobile  = (function($){
             var translateX = -(index * this.slideWidth);
             var speed      = this.settings.animSpeed || 500;
 
-            if(isUndefined(index) || index<0) index = 0;
+            if(isUndefined(index) || index<0){
+                index = 0;
+            } 
             if(index > (length-1)){
                 index = length-1;
             } 
@@ -590,7 +599,7 @@ window.TGUIMobile  = (function($){
             if (this.support.transforms3d){
                 this.slideWraper.transform('translate3d(' + translateX + 'px, 0px, 0px)');  
             } else {
-                this.slideWraper.transform('translate(' + translateX + 'px, 0px)')
+                this.slideWraper.transform('translate(' + translateX + 'px, 0px)');
             } 
 
             if(loop){
@@ -615,8 +624,13 @@ window.TGUIMobile  = (function($){
         };
 
         spt.silentSlideTo = function(index){
-            this.slideWraper.transition(0);
-            this.slideTo(index);
+            var speed = this.settings.animSpeed || 500;
+            var _this = this;
+            _this.slideWraper.transition(0);
+            _this.slideTo(index);
+            requestAnimationFrame(function(){
+                _this.slideWraper.transition(speed);
+            });
         };
 
         spt.autoplay = function(){
@@ -629,8 +643,6 @@ window.TGUIMobile  = (function($){
             var duration = settings.duration;
             var loop     = settings.loop;
             var speed    = settings.animSpeed || 500;
-
-            console.log(Math.random());
 
             if(!pausing){
                 index = _this.currentIndex + 1;
@@ -658,7 +670,7 @@ window.TGUIMobile  = (function($){
                     _this.autoplay();
                 }, delay);
             }
-        }
+        };
 
         spt.onTouchStart = function(e){
             var _this = this;
@@ -668,7 +680,7 @@ window.TGUIMobile  = (function($){
             _this.wraperTranslateX = this.getTranslateX( this.slideWraper[0] );
             _this.toucheStartTime = Date.now();
             _this.slideWraper.transition(0);
-        }
+        };
 
         spt.onTouchMove = function(e){
             var wraperTranslateX,
@@ -690,7 +702,7 @@ window.TGUIMobile  = (function($){
             } else {
                 this.slideWraper.transform('translate(' + currentTranslate + 'px, 0px)');
             }
-        }
+        };
 
         spt.onTouchEnd = function(e){
             var nowTime = Date.now();
@@ -703,8 +715,8 @@ window.TGUIMobile  = (function($){
             this.pausing = false;
             this.slideWraper.transition( speed );
 
-            if( ((absDiff < slideWidth/3) && (nowTime - this.toucheStartTime) > 200
-                || absDiff < 10 )){
+            if( ((absDiff < slideWidth/3) && 
+                (nowTime - this.toucheStartTime) > 200 || absDiff < 10 )){
                 slideToIndex = this.currentIndex;
             } else if( diff < 0 ){
                 slideToIndex = ++this.currentIndex;
@@ -713,7 +725,7 @@ window.TGUIMobile  = (function($){
             }
             this.slideWraper.transition(200);
             this.slideTo( slideToIndex );
-        }
+        };
 
         spt.getTranslateX = function (el) {
             var matrix, curTransform, curStyle, transformMatrix;
@@ -748,7 +760,7 @@ window.TGUIMobile  = (function($){
             transforms3d : (window.Modernizr && Modernizr.csstransforms3d === true) || (function () {
                 var div = document.createElement('div').style;
                 return ('webkitPerspective' in div || 'MozPerspective' in div || 'OPerspective' in div || 'MsPerspective' in div || 'perspective' in div);
-            })(),
+            })()
         };
 
         var initSlider = function(element, settings){
@@ -756,7 +768,7 @@ window.TGUIMobile  = (function($){
             var delay       = settings.pauseTime;
             var autoplay    = settings.autoplay;
 
-            var ajSliderEle = new ajSlider($element, settings);
+            var ajSliderEle = new AjSlider($element, settings);
             if(autoplay){
                 ajSliderEle.autoPlayTimerId = setTimeout(function(){
                     ajSliderEle.autoplay();
@@ -779,7 +791,7 @@ window.TGUIMobile  = (function($){
                     ajSliderEle = initSlider($element, settings);
                 });
             });
-        }
+        };
 
         //Default settings
         $.fn.ajSlider.defaults = {

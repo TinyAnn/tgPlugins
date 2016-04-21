@@ -188,6 +188,7 @@ a {
     left:0;
     right:0;
     background-color: rgba(0,0,0,0.4);
+    z-index:100000000;
 }
 .ajly-main{
     position:fixed;
@@ -197,6 +198,7 @@ a {
     box-sizing: border-box;
     text-align:center;
     border:1px solid #ccc;
+    z-index:100000001;
 }
 .ajly-header{
     font-size:36px;
@@ -332,14 +334,16 @@ a {
     top:100%;
     -webkit-transform: translateY(-100%);
             transform: translateY(-100%);
+    z-index:2;
 }
 .aj-slidePgWraper li{
     display:inline-block;
-    height:10px;
-    width:10px;
+    height:15px;
+    width:15px;
     border-radius:100%;
     background-color:#ddd;
     margin:10px;
+
 }
 .aj-slidePgWraper li.active{
     background-color:#f33;
