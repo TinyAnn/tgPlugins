@@ -2,7 +2,6 @@ var gulp         = require('gulp'),
     runSequence  = require('run-sequence'),
     gulpif       = require('gulp-if'),
     uglify       = require('gulp-uglify'),
-    // less         = require('gulp-less'),
     csslint      = require('gulp-csslint'),
     rev          = require('gulp-rev'),
     minifyCss    = require('gulp-minify-css'),
@@ -18,7 +17,6 @@ var gulp         = require('gulp'),
     clean        = require('gulp-clean');
 
 var 
-    cssSrcItems = ['tgui_mobile.css', 'index.css'],
     cssSrc      = 'src/css/*.css',
     cssDest     = 'dist/css',
     jsSrc       = 'src/js/*.js',
@@ -27,7 +25,9 @@ var
     fontDest    = 'dist/font',
     imgSrc      = 'src/img/*',
     imgDest     = 'dist/img',
-    cssRevSrc   = 'src/css/revCss',
+    cssRev      = 'src/css/revCss',
+    cssRevSrc   = 'src/css/revCss/*.css',
+    jsRev       = 'src/rev/js',
     htmlSrc     = 'src/*.html',
     condition   = true;
 
@@ -78,7 +78,7 @@ gulp.task('miniJs', function() {
         .pipe(rev())
         .pipe(gulp.dest(jsDest))
         .pipe(rev.manifest())
-        .pipe(gulp.dest('src/rev/js'))
+        .pipe(gulp.dest(jsRev))
         .pipe(notify({ message: 'Script task complete' }));
 });
 
@@ -86,7 +86,7 @@ gulp.task('miniJs', function() {
 gulp.task('revCollectorCss', function() {
     return gulp.src(['src/rev/**/*.json', cssSrc])
         .pipe(revCollector())
-        .pipe(gulp.dest(cssRevSrc));
+        .pipe(gulp.dest(cssRev));
 });
 
 //检测CSS
@@ -102,7 +102,7 @@ gulp.task('lintCss', function() {
 
 //压缩/合并CSS/生成版本号
 gulp.task('miniCss', function() {
-    return gulp.src(changePath(cssSrcItems))
+    return gulp.src(cssRevSrc)
         .pipe(gulpif(
             condition, minifyCss({
                 compatibility: 'ie7'
@@ -139,7 +139,7 @@ gulp.task('miniHtml', function() {
 });
 
 gulp.task('delRevCss', function() {
-    del([cssRevSrc, cssRevSrc.replace('src/', 'dist/')]);
+    del([cssRevSrc]);
 })
 
 gulp.task('clean', function() {  
@@ -151,14 +151,14 @@ gulp.task('clean', function() {
 gulp.task('dev', ['clean'], function(done) {
     condition = false;
     runSequence(
-        ['revFont', 'revImg'], /*['lintJs', 'lintCss'],*/ ['revCollectorCss'], ['miniCss', 'miniJs'], ['miniHtml'/*, 'delRevCss'*/],
+        ['revFont', 'revImg'], /*['lintJs', 'lintCss'],*/ ['revCollectorCss'], ['miniCss', 'miniJs'], ['miniHtml', 'delRevCss'],
         done);
 });
 
 //正式构建
 gulp.task('build', ['clean'], function(done) {
     runSequence(
-        ['revFont', 'revImg'], /*['lintJs', 'lintCss'],*/ ['revCollectorCss'], ['miniCss', 'miniJs'], ['miniHtml'/*, 'delRevCss'*/],
+        ['revFont', 'revImg'], /*['lintJs', 'lintCss'],*/ ['revCollectorCss'], ['miniCss', 'miniJs'], ['miniHtml', 'delRevCss'],
         done);
 });
 
