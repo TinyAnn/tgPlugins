@@ -34,11 +34,10 @@ window.TGUIMobile  = (function($){
         var head       = $('head')[0];
         var module     = moduleSrc.replace(/\s/g, '');
         var iscss      = /\.css$/.test(module);
-        var type       = iscss?'link':'script';
         var node       = document.createElement(iscss ? 'link' : 'script');
         var path       = document.currentScript.src;
-        var modulePath = path.replace(/dist\/js\/\w+\.js$/,module);
-        var targetTag, type;
+        var modulePath = path.replace(/js\/\w+\.js$/,module);
+        var targetTag;
 
         //生成id
         var id = module.replace(/\.|\/|\:/g, '');
@@ -97,8 +96,9 @@ window.TGUIMobile  = (function($){
         return this;
     };
 
-    require('dist/css/tgui_mobile.min.css');
-    require('fonts/font-awesome-4.5.0/css/font-awesome.min.css');
+    require('css/tgui_mobile.min.css');
+    require('css/font-awesome.min.css');
+    
     /**==============================================================
      * 
      * 弹出框

@@ -1,0 +1,19 @@
+.aj-slideWraper{
+    height:600px;
+}
+.aj-slide{
+    background-size:100%;
+    background-repeat:no-repeat;
+}
+.slide1{
+    background-image:url('../img/dog1.jpg');
+}
+.slide2{
+    background-image:url('../img/dog2.jpg');
+}
+.slide3{
+    background-image:url('../img/dog3.jpg');
+}
+.slide4{
+    background-image:url('../img/dog4.jpg');
+}
