@@ -1,1 +1,0 @@
-$(function(){$(".aj-slideContainer").ajSlider()});

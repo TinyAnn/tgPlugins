@@ -1,5 +1,5 @@
 {
-  "name": "web-official",
+  "name": "web-realname",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -28,9 +28,11 @@
     "gulp-rev": "^7.0.0",
     "gulp-rev-collector": "^1.0.3",
     "gulp-ruby-sass": "^2.0.6",
+    "gulp-sass": "^2.3.1",
     "gulp-uglify": "^1.5.3",
     "jshint": "^2.9.2",
     "jshint-stylish": "^2.1.0",
+    "ruby": "^0.6.0",
     "run-sequence": "^1.1.5"
   }
 }
