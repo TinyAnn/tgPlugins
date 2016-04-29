@@ -17,7 +17,8 @@ var
     sass         = require('gulp-sass'),
     clean        = require('gulp-clean'),
     imagemin     = require('gulp-imagemin'),
-    concat       = require('gulp-concat');
+    concat       = require('gulp-concat'),
+    sourcemaps   = require('gulp-sourcemaps');
 
 var
     cssSrc    = 'src/css/*.?(s)css',
@@ -95,10 +96,12 @@ gulp.task('lintJs', function() {
 //压缩JS/生成版本号
 gulp.task('handleJs', function() {
     return gulp.src(jsSrc)
+        .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(gulpif(
             condition, uglify()
         ))
         .pipe(rev())
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest(jsDest))
         .pipe(rev.manifest())
         .pipe(gulp.dest(jsRev))

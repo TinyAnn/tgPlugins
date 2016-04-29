@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script src="http://apps.bdimg.com/libs/jquery/2.0.3/jquery.min.js" ></script>
+	</head>
+	<body>
+		
+		<input id="input1" type="text" maxlength="13" />
+		<div id="div1">您输入的电话号码：</div>
+		
+		
+		<script>
+		$(function(){
+			$("#input1").on('keydown', function(event) {
+				var keycode = event.which;
+				var mobile = $(this).val();
+				var spaceIndex, mobileLength;
+
+				if(keycode === 8){
+					mobileLength = mobile.length;
+					spaceIndex = mobileLength-2;
+					if(mobile.charAt(spaceIndex) == ' '){
+						event.preventDefault();
+						mobile = mobile.substring(0,spaceIndex);
+						$(this).val(mobile);
+					}else if(mobile.charAt(mobileLength-1) == ' '){
+						event.preventDefault();
+						mobile = mobile.substring(0,spaceIndex);
+						$(this).val(mobile);
+					}
+				}
+			}).on("input propertychange",function(){
+				$(this).val(fomartMobile($(this).val()));
+			}).on("keyup",function(event){
+				var mobile = $(this).val();
+				var keycode = event.which;
+				if(keycode === 8){
+					mobile = fomartMobile(mobile);
+					$(this).val(mobile);
+				}
+			});
+
+		});
+		
+		function fomartMobile(mobile){
+			mobile += '';
+			var phoneReg1 = /(^\d{3}) *(\d{1,4}?)/;
+			var phoneReg2 = /(^\d{3}) *(\d{4}) *(\d+)/;
+			var phoneReg3 = /^([ \d]{13}).*/;
+			var phoneReg4 = /[\D]/g;
+			mobile = mobile.replace(phoneReg4, "").replace(phoneReg1, '$1 $2').replace(phoneReg2, '$1 $2 $3').replace(phoneReg3, '$1');
+			return mobile;
+		}
+		</script>
+	</body>
+</html>
